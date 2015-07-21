@@ -12,7 +12,7 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
-var messages = [];
+var messagesObject = {};
 var key = 0;
 
 exports.requestHandler = function(request, response) {
@@ -34,7 +34,7 @@ exports.requestHandler = function(request, response) {
   console.log(typeof request.url === 'string');
 
   // The outgoing status.
-  var statusCode;
+  var statusCode = 404;
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
@@ -47,14 +47,29 @@ exports.requestHandler = function(request, response) {
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  var room ;
-  if(request.url === '/send'){
-    statusCode = 201;
-  } else if (request.url === '/classes/messages'){
-    statusCode = 200;
-  } else {
-    statusCode = 404;
+
+
+  // take the URL and .split('/') it to get an array 
+  var urlArray = request.url.split('/');
+  // array [0] would be domain name, skip
+  // array[1] should be classes and array [2] would be messages or room name
+  // hold both words in variables
+  var classes = urlArray[1];
+  var filter = urlArray[2];
+
+  // in first if statement, check if classes is classes
+  // in get and post, check room name
+
+  if(classes === 'classes'){
+    if(request.method === 'OPTIONS'){
+      statusCode = 200;
+    } else if(request.method === 'GET') {
+      statusCode = 200;
+    } else if(request.method ==='POST') {
+      statusCode = 201;
+    }
   }
+
   response.writeHead(statusCode, headers);
   // slice last word off of request url
   // check if word is key in object
@@ -77,13 +92,22 @@ exports.requestHandler = function(request, response) {
         body.createdAt = new Date();
         body.objectId = key++;
         console.log(body);
-        messages.push(body);
+        if (messagesObject[filter]){
+          messagesObject[filter].push(body);
+        } else {
+          messagesObject[filter] = [body];
+        }
       }
     });
   } else if(request.method === 'GET') {
+    // make our data object with a results array
     var data = {};
-    data.results = messages;
-    console.log("data = ",data);
+    data.results = [];
+    // if the room is already in our object, send that back as the results array
+    if ( (filter in messagesObject) ){
+      data.results = messagesObject[filter];
+    }
+    // either way, send back the data object with the results array attached
     response.end(JSON.stringify(data));
   }
   // Make sure to always call response.end() - Node may not send
