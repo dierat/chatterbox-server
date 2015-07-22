@@ -35,8 +35,9 @@ app.send = function(message){
 app.fetch = function() {
   // should implement a GET request via ajax
   $.get( "http://127.0.0.1:3000/classes/messages", function( data ) {
-
-    var arr = JSON.parse(data).results;
+    console.log("data = ", data);
+    // var arr = JSON.parse(data).results;
+    var arr = data.results;
 
     arr.reverse().forEach(function(message) {
 
