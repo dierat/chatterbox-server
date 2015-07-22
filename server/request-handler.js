@@ -98,6 +98,7 @@ exports.requestHandler = function(request, response) {
           messagesObject[filter] = [body];
         }
       }
+      response.end();
     });
   } else if(request.method === 'GET') {
     // make our data object with a results array
@@ -117,7 +118,6 @@ exports.requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end("Hello, World!");
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
